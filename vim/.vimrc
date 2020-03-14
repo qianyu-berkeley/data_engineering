@@ -17,6 +17,8 @@ Plugin 'tpope/vim-fugitive' " plugin on GitHub repo
 Plugin 'scrooloose/nerdtree' " file drawer, open with :NERDTreeToggle
 Plugin 'kien/ctrlp.vim' "fuzzy find files
 Plugin 'klen/python-mode' "python mode
+Plugin 'Valloric/YouCompleteMe' "YCM
+Plugin 'Lokaltog/powerline', {'rtp': 'powerline/bindings/vim/'} "powerline
 
 
 " All of your Plugins must be added before the following line
@@ -29,10 +31,6 @@ autocmd! bufwritepost .vimrc source %
 " set a map leader for more key combo
 let mapleader = ','
 
-" Python env
-let g:pymode_python = 'python3'
-"set pythonthreehome=$HOME/anaconda3
-"set pythonthreedll=$HOME/anaconda3/lib/libpython3.6m.dylib
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Key Map
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -116,6 +114,10 @@ set magic
 " causes files to be hidden instead of closed
 set hidden
 
+" python
+set pythondll=/Users/qianyu/anaconda3/lib/python3.6/lib-dynload
+set pythonthreedll=/Users/qianyu/anaconda3/lib/python3.6/lib-dynload
+
 set wildmenu
 set showcmd
 
@@ -132,4 +134,6 @@ let g:NERDTreeQuitOnOpen=0
 let NERDTreeShowHidden=1
 " Toggle NERDTree
 nmap <Leader>t :NERDTreeToggle<cr>
-
+" close autocomplete window
+let g:ycm_autoclose_preview_window_after_completion=1
+map <leader>g  :YcmCompleter GoToDefinitionElseDeclaration<CR>
