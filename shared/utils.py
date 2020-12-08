@@ -1,10 +1,11 @@
 import itertools
-import pytz
 import os
-from pytz import timezone
 from datetime import datetime, timedelta
-from gopuff_etl.etlexceptions import ETLException
 from itertools import islice
+
+import pytz
+from gopuff_etl.etlexceptions import ETLException
+from pytz import timezone
 
 
 def oscmd_rmfile(filename):
@@ -83,7 +84,9 @@ def seconds_to_string(run_time):
     )
 
 
-def replace_timezone(timestring, timezone_to_replace, timestamp_fmt="%a, %d %b %Y %H:%M:%S %z"):
+def replace_timezone(
+    timestring, timezone_to_replace, timestamp_fmt="%a, %d %b %Y %H:%M:%S %z"
+):
 
     dtobj = datetime.strptime(timestring, timestamp_fmt)
     dtobj.replace(tzinfo=pytz.timezone(timezone_to_replace))

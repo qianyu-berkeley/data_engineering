@@ -1,10 +1,11 @@
-import os
 import json
+import os
 import urllib.parse
-import pkg_resources
-import pandas as pd
 from collections import defaultdict
 from datetime import datetime
+
+import pandas as pd
+import pkg_resources
 
 
 def parse_s3_path(s3_path):
@@ -43,7 +44,7 @@ class MetaUtils(object):
     @staticmethod
     def generate_run_date_hour_path(batch_date):
         dobj = datetime.strptime(batch_date, timestamp_format)
-        return "{0}{1}/{2}{3}/{4}{5}".format(
+        return "{0}{1}/{2}{3}/{4}{5}/{6}{7}".format(
             MetaUtils.YEAR_PRE,
             dobj.strftime("%Y"),
             MetaUtils.MONTH_PRE,
@@ -58,7 +59,10 @@ class MetaUtils(object):
     def generate_run_year_month(batch_date):
         dobj = datetime.strptime(batch_date, timestamp_format)
         return "{0}{1}/{2}{3}".format(
-            MetaUtils.YEAR_PRE, dobj.strftime("%Y"), MetaUtils.MONTH_PRE, dobj.strftime("%m"),
+            MetaUtils.YEAR_PRE,
+            dobj.strftime("%Y"),
+            MetaUtils.MONTH_PRE,
+            dobj.strftime("%m"),
         )
 
     @staticmethod
@@ -71,13 +75,18 @@ class KinesisPartitionFormatter(object):
     @staticmethod
     def generate_run_date_path(batch_date):
         dobj = datetime.strptime(batch_date, timestamp_format)
-        return "{0}/{1}/{2}".format(dobj.strftime("%Y"), dobj.strftime("%m"), dobj.strftime("%d"))
+        return "{0}/{1}/{2}".format(
+            dobj.strftime("%Y"), dobj.strftime("%m"), dobj.strftime("%d")
+        )
 
     @staticmethod
     def generate_run_date_hour_path(batch_date):
         dobj = datetime.strptime(batch_date, timestamp_format)
         return "{0}/{1}/{2}/{3}".format(
-            dobj.strftime("%Y"), dobj.strftime("%m"), dobj.strftime("%d"), dobj.strftime("%H"),
+            dobj.strftime("%Y"),
+            dobj.strftime("%m"),
+            dobj.strftime("%d"),
+            dobj.strftime("%H"),
         )
 
     @staticmethod
@@ -102,7 +111,9 @@ class SchemaResource(object):
 
         self._module = module
         self._filepath = filepath
-        self._schema_file = pkg_resources.resource_filename(self._module, self._filepath)
+        self._schema_file = pkg_resources.resource_filename(
+            self._module, self._filepath
+        )
 
     def schema_file(self):
         return self._schema_file
@@ -278,7 +289,9 @@ class KinesisTable(S3Table):
         if self._partition_type == "ymd":
             # partition has year/month/day
             return "{0}/{1}/{2}".format(
-                self._rootpath, self._name, KinesisPartitionFormatter.generate_run_date_path(rdate),
+                self._rootpath,
+                self._name,
+                KinesisPartitionFormatter.generate_run_date_path(rdate),
             )
         elif self._partition_type == "ymdh":
             # partition has year/month/day
@@ -335,9 +348,13 @@ class Database(object):
 
         default_partition_type = self.partition_type
         if custom_partition_type:
-            table_object = Table(self.root_path, table_name, fqs_path, custom_partition_type)
+            table_object = Table(
+                self.root_path, table_name, fqs_path, custom_partition_type
+            )
         else:
-            table_object = Table(self.root_path, table_name, fqs_path, default_partition_type)
+            table_object = Table(
+                self.root_path, table_name, fqs_path, default_partition_type
+            )
 
         self._db[table_name] = table_object
 
@@ -388,7 +405,10 @@ class Database(object):
 
             print(
                 "{0}\t{1}\t{2}\t{3}\n".format(
-                    self._name, impl.name, impl.path(rdate="2018-11-03T10:00:00"), impl.schema,
+                    self._name,
+                    impl.name,
+                    impl.path(rdate="2018-11-03T10:00:00"),
+                    impl.schema,
                 )
             )
 
@@ -398,7 +418,9 @@ class Database(object):
         :param tablename:
         :return:
         """
-        return "{0}/{1}/{2}".format(self._root_path, self._name, Table(tablename).path())
+        return "{0}/{1}/{2}".format(
+            self._root_path, self._name, Table(tablename).path()
+        )
 
 
 class Metastore(object):

@@ -6,7 +6,6 @@ class BaseExpTaskException(Exception):
 
 
 class GPExpTaskException(BaseExpTaskException):
-
     def __init__(self, message, errors={}):
 
         # call the base class constructor
@@ -14,7 +13,7 @@ class GPExpTaskException(BaseExpTaskException):
         self._errors = errors
 
     def __repr__(self):
-        """ Return prints of the exception information.
+        """Return prints of the exception information.
         :return:
         """
         pprint.pprint(self._errors)

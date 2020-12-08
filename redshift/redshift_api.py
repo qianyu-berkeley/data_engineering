@@ -1,7 +1,9 @@
-import psycopg2
+import logging
+
 import pandas as pd
 import pgpasslib
-import logging
+import psycopg2
+
 from shared.exp_exceptions import BaseExpTaskException
 
 
@@ -24,7 +26,8 @@ def connect_to_reshift(
         raise (
             Exception(
                 "Did not provide a user_name for:\n\thost: {0}\n\tdbname: {1}".format(
-                    host_add, dbname)
+                    host_add, dbname
+                )
             )
         )
 
@@ -34,18 +37,19 @@ def connect_to_reshift(
 
     # connect to redshift with fixed user / password
     try:
-        conn = psycopg2.connect(dbname=dbname,
-                                host=host_add,
-                                port=port,
-                                user=user,
-                                password=pwd)
+        conn = psycopg2.connect(
+            dbname=dbname, host=host_add, port=port, user=user, password=pwd
+        )
         logging.info("Successfully connected to Redshift")
         return conn
     except Exception as err:
-        logging.error("Unable to connect to the database with error {} of error_code: {}".format(err,
-                                                                                                 err.code))
+        logging.error(
+            "Unable to connect to the database with error {} of error_code: {}".format(
+                err, err.code
+            )
+        )
 
-    raise(BaseExpTaskException("Error in fetching the Redshift Connection"))
+    raise (BaseExpTaskException("Error in fetching the Redshift Connection"))
 
 
 def run_query_from_file(user, script, *args):
@@ -74,11 +78,11 @@ def run_query_from_file(user, script, *args):
         colnames = [desc[0] for desc in cur.description]
         df = pd.DataFrame(rows, columns=colnames)
         logging.info("Completed Query Data")
-        logging.info('-----------------------------------')
+        logging.info("-----------------------------------")
         cur = None
         return df
     except psycopg2.Error as e:
-        logging.error('Unable to run Query!')
+        logging.error("Unable to run Query!")
         logging.error(e.pgerror)
 
 
@@ -105,9 +109,9 @@ def run_query(user, query, *args):
         colnames = [desc[0] for desc in cur.description]
         df = pd.DataFrame(rows, columns=colnames)
         logging.info("Completed Query Data")
-        logging.info('-----------------------------------')
+        logging.info("-----------------------------------")
         cur = None
         return df
     except psycopg2.Error as e:
-        logging.error('Unable to run Query!')
+        logging.error("Unable to run Query!")
         logging.error(e.pgerror)

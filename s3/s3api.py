@@ -1,11 +1,12 @@
+import io
+import urllib.parse
+import uuid
+
 import boto3
 import botocore
-import io
+import fastavro
 import pandas as pd
 import s3fs
-import fastavro
-import uuid
-import urllib.parse
 from botocore.errorfactory import ClientError
 from gopuff_etl.utils import oscmd_rmfile
 
@@ -176,7 +177,9 @@ def read_s3_avro_file(s3_filename, uidstr):
     bucket, path = parse_s3_path(s3_filename)
     bucket_api = boto3.resource("s3").Bucket(bucket)
     original_filename = path.split("/")[-1].split(".avro")[0]
-    avro_file_name = "{}_{}_{}.avro".format(uidstr, original_filename, str(uuid.uuid4()))
+    avro_file_name = "{}_{}_{}.avro".format(
+        uidstr, original_filename, str(uuid.uuid4())
+    )
     with open(avro_file_name, "wb") as fout:
         bucket_api.download_fileobj(path, fout)
 
