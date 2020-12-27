@@ -1,23 +1,11 @@
 import json
 import os
-import urllib.parse
 from collections import defaultdict
 from datetime import datetime
 
 import pandas as pd
 import pkg_resources
-
-
-def parse_s3_path(s3_path):
-    """
-    Just helper function to parse the complete s3 path.
-    :param s3_path:
-    :return:
-    """
-    s3_detail = urllib.parse.urlparse(s3_path)
-    # skip the leading slash
-    return s3_detail.netloc, s3_detail.path[1:]
-
+from s3api import parse_s3_path
 
 timestamp_format = "%Y-%m-%dT%H:%M:%S"
 
@@ -100,12 +88,6 @@ class KinesisPartitionFormatter(object):
         return dobj.strftime(tmformat)
 
 
-"""
-Schema Resource class that provides file level
-access for open calls.
-"""
-
-
 class SchemaResource(object):
     def __init__(self, module, filepath):
 
@@ -121,13 +103,6 @@ class SchemaResource(object):
 
 class Table(object):
     def __init__(self, dbroot, name, schema=None, partitiontype="ymd"):
-        """
-
-        :param dbroot:
-        :param name:
-        :param schema:
-        :param partitiontype:
-        """
         self._name = name
         self._partition_type = partitiontype
         self._schema_file = schema

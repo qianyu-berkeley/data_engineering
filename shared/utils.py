@@ -1,15 +1,13 @@
-import itertools
 import os
 from datetime import datetime, timedelta
 from itertools import islice
 
 import pytz
-from gopuff_etl.etlexceptions import ETLException
+from etlexceptions import ETLException
 from pytz import timezone
 
 
 def oscmd_rmfile(filename):
-
     """
     Removes the file by full path
     """
@@ -18,7 +16,6 @@ def oscmd_rmfile(filename):
 
 
 def gp_validate_date(date_str):
-
     try:
         datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
         return date_str
@@ -29,23 +26,16 @@ def gp_validate_date(date_str):
 
 
 def get_runtime_date():
-
     dtobj = datetime.now(timezone("UTC"))
     return dtobj.strftime("%Y-%m-%d")
 
 
 def get_timestamp():
-
     dtobj = datetime.now(timezone("UTC"))
     return dtobj.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def generate_time_series_from_day(dstr):
-    """
-    TODO : Switch to pandas Timeseries
-    :param dstr:
-    :return:
-    """
     dobj = datetime.strptime(dstr, "%Y-%m-%d")
     tseries = []
     for hour in range(0, 24):
@@ -54,21 +44,11 @@ def generate_time_series_from_day(dstr):
 
 
 def make_batches_from_pool(pool, batch_size=5):
-    """
-    Returns batches of smaller lists
-    :param pool:
-    :param batch_size:
-    :return:
-    """
     for pool_id in range(0, len(pool), batch_size):
         yield iter(pool[pool_id : pool_id + batch_size])
 
 
 def convert_to_d_h_m_s(total_seconds):
-    """
-    Return the tuple of days, hours,
-    minutes and seconds.
-    """
     seconds = int(total_seconds)
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
@@ -78,7 +58,6 @@ def convert_to_d_h_m_s(total_seconds):
 
 
 def seconds_to_string(run_time):
-
     return "{0[0]} days, {0[1]} hours, {0[2]} minutes, {0[3]} " "seconds".format(
         convert_to_d_h_m_s(run_time)
     )
@@ -94,19 +73,11 @@ def replace_timezone(
 
 
 def convert_timezone(timestring, to_timezone, timestamp_fmt="%a, %d %b %Y %H:%M:%S %z"):
-
     dtobj = datetime.strptime(timestring, timestamp_fmt)
     return dtobj.astimezone(pytz.timezone(to_timezone))
 
 
-def _chunked(iterable, n):
-    """
-    Collect data into chunks of up to length n.
-    :type iterable: Iterable[T]
-    :type n: int
-    :rtype: Iterator[list[T]]
-    """
-
+def chunked(iterable, n):
     it = iter(iterable)
     while True:
         chunk = list(islice(it, n))
@@ -117,7 +88,6 @@ def _chunked(iterable, n):
 
 
 def chunk_maker(data, chunk_size=5):
-
     itr = iter(data)
     number_of_chunks = (len(data) // chunk_size) + 1
     total = len(data)

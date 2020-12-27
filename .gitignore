@@ -105,3 +105,9 @@ venv.bak/
 
 # mac system files
 .DS_Store
+
+# pycharm files
+.idea/
+
+# ctags
+tags

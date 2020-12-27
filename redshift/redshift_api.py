@@ -4,10 +4,10 @@ import pandas as pd
 import pgpasslib
 import psycopg2
 
-from shared.exp_exceptions import BaseExpTaskException
+from shared.etlexceptions import BaseExpTaskException
 
 
-def connect_to_reshift(
+def connect_to_redshift(
     host_add=None,
     dbname=None,
     user=None,
@@ -15,10 +15,16 @@ def connect_to_reshift(
     pwd=None,
 ):
     """Connect to Redshift server
+    - redshift parameter can be obtained from environment variables
+    - password can be obtained using pgpasslib module
 
     parameters:
     -----------
-    credential: reshift credential in dictionary
+    host_add: redshift host
+    dbname: redshift database name
+    user: redshift user id
+    port: redshift port name
+    pwd: redshift user password
     """
 
     # user name need to be provided
@@ -58,15 +64,17 @@ def run_query_from_file(user, script, *args):
 
     parameters
     ----------
-    credential: reshift credential in dictionary
-
-    query: Text variable of SQL query
-
+    user: redshift user id
+    script: SQL query script in a file
     *args: list of parameters used in the SQL query
+
+    return
+    ------
+    Query results in a panda dataframe
     """
 
-    # reshift connection
-    conn = connect_to_reshift(user=user)
+    # redshift connection
+    conn = connect_to_redshift(user=user)
     cur = conn.cursor()
 
     f = open(script, "r")
@@ -92,15 +100,17 @@ def run_query(user, query, *args):
 
     parameters
     ----------
-    credential: reshift credential in dictionary
-
-    query: Text variable of SQL query
-
+    user: redshift user id
+    query: SQL query in string
     *args: list of parameters used in the SQL query
+
+    return
+    ------
+    Query results in a panda dataframe
     """
 
     # reshift connection
-    conn = connect_to_reshift(user=user)
+    conn = connect_to_redshift(user=user)
     cur = conn.cursor()
 
     try:

@@ -3,9 +3,9 @@ import boto3
 from boto3.dynamodb.conditions import Key
 
 
-class dynamodbAPI:
-    def __init__(self):
-        self.region_name = "us-east-1"
+class DynamodbAPI:
+    def __init__(self, region_name):
+        self.region_name = region_name
         self.dynamodb_resource = boto3.resource(
             "dynamodb", region_name=self.region_name
         )
@@ -14,7 +14,6 @@ class dynamodbAPI:
     def get_table_list(self):
         """Return a list all tables in the dynamoDB."""
         table_list = self.dynamodb_client.list_tables()["TableNames"]
-
         return table_list
 
     def get_table_metadata(self, table_name):
@@ -38,7 +37,6 @@ class dynamodbAPI:
 
     def add_item(self, table_name, col_dict):
         """Add one item (row) to table.
-
         Note: col_dict is a dictionary {col_name: value}.
         """
         table = self.dynamodb_resource.Table(table_name)

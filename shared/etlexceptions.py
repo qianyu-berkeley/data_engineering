@@ -7,8 +7,6 @@ class BaseExpTaskException(Exception):
 
 class GPExpTaskException(BaseExpTaskException):
     def __init__(self, message, errors={}):
-
-        # call the base class constructor
         super(BaseExpTaskException, self).__init__(message)
         self._errors = errors
 
@@ -18,3 +16,15 @@ class GPExpTaskException(BaseExpTaskException):
         """
         pprint.pprint(self._errors)
         return "{}".format(self._errors)
+
+
+class ETLException(Exception):
+    def __init__(self, *args, **kwargs):
+        super(ETLException, self).__init__(args, kwargs)
+
+
+class ETLExceptionWithContext(Exception):
+    def __init___(self, errargs):
+        errmsg = "puff_exception raised with : {}".format(errargs)
+        super(ETLExceptionWithContext, self).__init__(errargs)
+        self._errmsg = errmsg

@@ -1,4 +1,3 @@
-import io
 import urllib.parse
 import uuid
 
@@ -7,8 +6,8 @@ import botocore
 import fastavro
 import pandas as pd
 import s3fs
-from botocore.errorfactory import ClientError
-from gopuff_etl.utils import oscmd_rmfile
+
+from shared.utils import oscmd_rmfile
 
 
 def get_files_in_s3_folder_by_path(s3_path):
@@ -16,9 +15,14 @@ def get_files_in_s3_folder_by_path(s3_path):
     Returns a list of files in the folder identified
     by bucket and prefix. don't use session based
     token if we use IAM role based auth.
-    :param bucket:
-    :param prefix:
-    :return:
+
+    parameters:
+    ----------
+    s3_path: full s3 path
+
+    return
+    ------
+    return a list of file name
     """
     use_session = False
     bucket, prefix = parse_s3_path(s3_path)
@@ -44,9 +48,14 @@ def get_files_s3_path_by_path(s3_path):
     Returns a list of files in the folder identified
     by bucket and prefix. don't use session based
     token if we use IAM role based auth.
-    :param bucket:
-    :param prefix:
-    :return:
+
+    parameters:
+    ----------
+    s3_path: full s3 path
+
+    return
+    ------
+    return a list of file name in full s3 path
     """
     use_session = False
     bucket, prefix = parse_s3_path(s3_path)
@@ -71,10 +80,15 @@ def iterate_files_s3_path_by_path(s3_path):
     """
     Return a generator that iterates over all objects in a given s3 bucket
     don't use session based token if we use IAM role based auth.
-    :param s3_path
-    :return:
-    """
 
+    parameters:
+    ----------
+    s3_path: a full s3 path
+
+    return
+    ------
+    return a generator that contains a list of file name in full s3 path
+    """
     use_session = False
     bucket, prefix = parse_s3_path(s3_path)
 
@@ -103,9 +117,15 @@ def get_files_in_s3_folder(bucket, prefix):
     """
     Returns a list of files in the folder identified
     by bucket and prefix.
-    :param bucket:
-    :param prefix:
-    :return:
+
+    parameters:
+    ----------
+    bucket: an s3 bucket name
+    prefix: an s3 prefix
+
+    return
+    ------
+    return a list of file name
     """
     use_session = False
     if use_session:
@@ -125,9 +145,9 @@ def get_files_in_s3_folder(bucket, prefix):
 
 
 def check_for_file_s3_path(s3_path):
+    """check whether s3 path is valid"""
 
     client = boto3.client("s3")
-
     bucket, prefix = parse_s3_path(s3_path)
     try:
         client.head_object(Bucket=bucket, Key=prefix)
@@ -136,33 +156,39 @@ def check_for_file_s3_path(s3_path):
         return False
 
 
-def delete_s3_folder(bucket, folderkey):
+def delete_s3_folder(bucket, prefix):
     """
     Deleted set of folder in a bucket
-    :param bucket:
-    :param folderkey:
-    :return:
+
+    parameters:
+    -----------
+    bucket: an s3 bucket name
+    prefix: an s3 prefix
     """
+
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucket)
-    bucket.objects.filter(Prefix=folderkey).delete()
+    bucket.objects.filter(Prefix=prefix).delete()
     return
 
 
-def read_s3_avro_file(s3_filename, uidstr):
+def read_s3_avro_file(s3_filename, userid="test", use_s3fs=False):
     """
     Reads from s3 based avro file and returns
     a pandas dataframe.
-    :param s3_filename:
-    :return:
+
+    parameters:
+    -----------
+    s3_filename: an s3 filename
+    userid: a prefix of filename for downloading avro file to local
+    use_s3fs: a flag indicates whether to use s3fs module or not
+
+    return
+    ------
+    a panda dataframe
     """
 
-    use_s3fs = False
-
-    # TODO: idea is to deprecate the use of s3fs.
-    # as the session token are getting invalidated
     if use_s3fs:
-        # always true for now.
         if s3_filename.startswith("s3://"):
             s3_filename = s3_filename.split("s3://")[1]
 
@@ -177,24 +203,30 @@ def read_s3_avro_file(s3_filename, uidstr):
     bucket, path = parse_s3_path(s3_filename)
     bucket_api = boto3.resource("s3").Bucket(bucket)
     original_filename = path.split("/")[-1].split(".avro")[0]
-    avro_file_name = "{}_{}_{}.avro".format(
-        uidstr, original_filename, str(uuid.uuid4())
+    tmp_avro_filename = "{}_{}_{}.avro".format(
+        userid, original_filename, str(uuid.uuid4())
     )
-    with open(avro_file_name, "wb") as fout:
+    with open(tmp_avro_filename, "wb") as fout:
         bucket_api.download_fileobj(path, fout)
 
-    with open(avro_file_name, "rb") as fin:
+    with open(tmp_avro_filename, "rb") as fin:
         records = [record for record in fastavro.reader(fin)]
         df = pd.DataFrame(records)
-    oscmd_rmfile(avro_file_name)
+    oscmd_rmfile(tmp_avro_filename)
     return df
 
 
 def parse_s3_path(s3_path):
     """
-    Just helper function to parse the complete s3 path.
-    :param s3_path:
-    :return:
+    A helper function to parse a complete s3 path.
+
+    parameters
+    ----------
+    s3_path: a full s3 path
+
+    return
+    ------
+    s3 net path and prefix
     """
     s3_detail = urllib.parse.urlparse(s3_path)
     # skip the leading slash
@@ -204,9 +236,15 @@ def parse_s3_path(s3_path):
 def upload_file_to_s3(filename, s3_path):
     """
     uploads the given file to s3.
-    :param filename:
-    :param s3_path:
-    :return:
+
+    parameters
+    ----------
+    filename: the local file name to be uploaded
+    s3_path: destination s3 path
+
+    return
+    ------
+    upload status
     """
     s3_client = boto3.client("s3")
     bucket, path = parse_s3_path(s3_path)
@@ -216,26 +254,22 @@ def upload_file_to_s3(filename, s3_path):
 
 def get_s3_file_as_text(s3_path):
     """
-    Suitable only for small text files.
-    like the sql scripts.
-    :param s3_path:
-    :return:
+    Suitable only for small text files such as a script.
+
+    parameters
+    ----------
+    s3_path: s full 3 path
+
+    return
+    ------
+    file in text
     """
     try:
         bucket, path = parse_s3_path(s3_path)
         s3 = boto3.resource("s3")
-        fileobj = s3.Object(bucket, path)
-        data = fileobj.get()["Body"].read()
+        file_obj = s3.Object(bucket, path)
+        data = file_obj.get()["Body"].read()
         return data.decode("utf-8")
     except Exception as e:
         print("Failed fetch the file {}".format(s3_path))
-        raise e
-
-
-def get_s3_file_as_pd_df(s3_path):
-    try:
-        df = pd.read_csv(s3_path)
-        return df
-    except Exception as e:
-        print("Failed to fetch the file {}".format(s3_path))
         raise e
